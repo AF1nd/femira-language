@@ -28,7 +28,7 @@ map<Opcode, string> opcode_to_string = {
     { CALL, "call" },
 };
 
-void VirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace) 
+void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace) 
 {
     this->running_bytecode = bytecode;
 
@@ -227,18 +227,18 @@ void VirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace)
     }
 }
 
-void VirtualMachine::errorf(const string text) 
+void FemiraVirtualMachine::errorf(const string text) 
 {
     throw runtime_error("Runtime error: " + text);
 }
 
-void VirtualMachine::push_stack(Object* data)
+void FemiraVirtualMachine::push_stack(Object* data)
 {
     if (data == nullptr) this->errorf("Cannot push null pointer to stack");
     this->run_stack.push(data);
 }
 
-Object* VirtualMachine::pop_stack() 
+Object* FemiraVirtualMachine::pop_stack() 
 {
     Object* top = this->run_stack.top();
     if (top == nullptr) this->errorf("Stack is empty");

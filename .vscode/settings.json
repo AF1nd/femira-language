@@ -6,6 +6,7 @@
         "array": "cpp",
         "string_view": "cpp",
         "span": "cpp",
-        "cstddef": "cpp"
+        "cstddef": "cpp",
+        "stdexcept": "cpp"
     }
 }

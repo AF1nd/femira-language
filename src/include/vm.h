@@ -96,7 +96,7 @@ struct Null : Object {
 };
 
 
-class VirtualMachine 
+class FemiraVirtualMachine 
 {
     private:
         Bytecode running_bytecode;
