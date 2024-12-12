@@ -22,6 +22,9 @@ map<Opcode, string> opcode_to_string = {
 
     { RETURN, "return" },
 
+    { WRITE_DATA, "write" },
+    { READ_DATA, "read" },
+
     { CALL, "call" },
 };
 
@@ -48,6 +51,24 @@ void VirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace)
 
         switch (opcode)
         {
+        case WRITE_DATA:
+            {
+                Object* address = this->pop_stack();
+                if (Integer* integer = dynamic_cast<Integer*>(address)) {
+                    this->memory[integer->data] = data;
+                } else errorf("Address for data write must be a integer");
+            }
+            break;
+        case READ_DATA:
+            {
+                Object* address = data; 
+                
+                if (Integer* integer = dynamic_cast<Integer*>(address)) {
+                    if (this->memory.find(integer->data) != this->memory.end()) push_stack(this->memory.at(integer->data));
+                    else errorf("Memory cell " + integer->tostring() + " is empty");
+                } else errorf("Address for data read must be a integer");
+            }
+            break;
         case CALL:
             {
                 if (data != nullptr) {

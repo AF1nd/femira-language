@@ -10,19 +10,22 @@ using namespace std;
 
 enum Opcode 
 {
-    ADD,
-    SUB,
-    MUL,
-    DIV,
+    ADD = 0x1,
+    SUB = 0x2,
+    MUL = 0x3,
+    DIV = 0x4,
 
-    PUSHV,
+    PUSHV = 0x5,
 
-    PRINT,
-    WAIT,
+    PRINT = 0x6,
+    WAIT = 0x7,
 
-    RETURN,
+    WRITE_DATA = 0x8,
+    READ_DATA = 0x9,
 
-    CALL,
+    RETURN = 0x10,
+
+    CALL = 0x11,
 };
 
 struct Object
@@ -84,6 +87,7 @@ class VirtualMachine
     private:
         Bytecode running_bytecode;
         stack<Object*> run_stack;
+        map<int, Object*> memory;
     public:
         map<int, Bytecode> callableBytecodes;
         
