@@ -65,20 +65,16 @@ void VirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace)
                 
                 if (Integer* integer = dynamic_cast<Integer*>(address)) {
                     if (this->memory.find(integer->data) != this->memory.end()) push_stack(this->memory.at(integer->data));
-                    else errorf("Memory cell " + integer->tostring() + " is empty");
-                } else errorf("Address for data read must be a integer");
+                    else this->errorf("Memory cell " + integer->tostring() + " is empty");
+                } else this->errorf("Address for data read must be a integer");
             }
             break;
         case CALL:
             {
-                if (data != nullptr) {
-                    if (Integer* integer = dynamic_cast<Integer*>(data)) {
-                        int address = integer->data;
-                        Bytecode bytecode = this->callableBytecodes[address];
-
-                        runf_bytecode(bytecode, trace);
-                    } else this->errorf("Call error: bytecode address must be a integer");
-                } else this->errorf("Call error: unknown bytecode address");
+                Object* data = this->pop_stack();
+                if (Function* function = dynamic_cast<Function*>(data)) {
+                    runf_bytecode(function->bytecode, trace);
+                } else this->errorf("No function to call in stack");
             }
             break;
         case ADD:
@@ -91,19 +87,23 @@ void VirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace)
                     if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
                     {
                         this->push_stack(new Integer(integer->data + integer2->data));
+                        break;
                     }
                 } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                 {
                     if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
                     {
                         this->push_stack(new Double(double_value->data + double_value2->data));
+                        break;
                     }
                 }
+
+                this->errorf("Add operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
             }
             break;
         case SUB:
             {
-                Object* obj1 = this->pop_stack();
+               Object* obj1 = this->pop_stack();
                 Object* obj2 = this->pop_stack();
 
                 if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
@@ -111,14 +111,18 @@ void VirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace)
                     if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
                     {
                         this->push_stack(new Integer(integer2->data - integer->data));
+                        break;
                     }
                 } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                 {
                     if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
                     {
                         this->push_stack(new Double(double_value2->data - double_value->data));
+                        break;
                     }
                 }
+
+                this->errorf("Substract operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
             }
             break;
         case MUL:
@@ -131,34 +135,42 @@ void VirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace)
                     if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
                     {
                         this->push_stack(new Integer(integer->data * integer2->data));
+                        break;
                     }
                 } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                 {
                     if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
                     {
                         this->push_stack(new Double(double_value->data * double_value2->data));
+                        break;
                     }
                 }
+
+                this->errorf("Multiply operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
             }
             break;
         case DIV:
-            {
-                Object* obj1 = this->pop_stack();
+             {
+               Object* obj1 = this->pop_stack();
                 Object* obj2 = this->pop_stack();
 
                 if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
                 {
                     if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
                     {
-                        this->push_stack(new Integer(integer2->data + integer->data));
+                        this->push_stack(new Integer(integer2->data / integer->data));
+                        break;
                     }
                 } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                 {
                     if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
                     {
-                        this->push_stack(new Double(double_value2->data + double_value->data));
+                        this->push_stack(new Double(double_value2->data / double_value->data));
+                        break;
                     }
                 }
+
+                this->errorf("Divide operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
             }
             break;
         case PUSHV:

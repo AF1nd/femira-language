@@ -33,6 +33,15 @@ struct Object
     virtual string tostring() { return "unknown datatype"; };
 };
 
+struct Instruction
+{
+    Opcode opcode;
+    Object* data;
+    Instruction(Opcode opcode, Object* data = nullptr) { this->opcode = opcode; this->data = data; };
+};
+
+using Bytecode = vector<Instruction>;
+
 struct String : Object 
 {
     string data;
@@ -40,7 +49,7 @@ struct String : Object
 
     string tostring() override 
     {
-        return this->data;
+        return this->data + " (string)";
     }
 };
 
@@ -51,7 +60,7 @@ struct Integer : Object
     
     string tostring() override 
     {
-        return to_string(this->data);
+        return to_string(this->data) + " (int)";
     }
 };
 
@@ -62,9 +71,22 @@ struct Double : Object
 
     string tostring() override 
     {
-        return to_string(this->data);
+        return to_string(this->data) + " (double)";
     }
 }; 
+
+struct Function : Object
+{
+    Bytecode bytecode;
+    int args_number;
+
+    Function(Bytecode bytecode, int args_number) { this->bytecode = bytecode; this->args_number = args_number; };
+
+    string tostring() override 
+    {
+        return "(function)";
+    }
+};
 
 struct Null : Object {
     string tostring() override 
@@ -73,14 +95,6 @@ struct Null : Object {
     }
 };
 
-struct Instruction
-{
-    Opcode opcode;
-    Object* data;
-    Instruction(Opcode opcode, Object* data = nullptr) { this->opcode = opcode; this->data = data; };
-};
-
-using Bytecode = vector<Instruction>;
 
 class VirtualMachine 
 {
@@ -89,7 +103,7 @@ class VirtualMachine
         stack<Object*> run_stack;
         map<int, Object*> memory;
     public:
-        map<int, Bytecode> callableBytecodes;
+        map<int, Bytecode> callable_bytecodes;
         
         void runf_bytecode(const Bytecode bytecode, const bool trace = false);
         void errorf(const string text);
