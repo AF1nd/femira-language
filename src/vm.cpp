@@ -10,22 +10,22 @@
 using namespace std;
 
 map<Opcode, string> opcode_to_string = {
-    { ADD, "add" },
-    { SUB, "sub" },
-    { MUL, "mul" },
-    { DIV, "div" },
+    { OP_ADD, "add" },
+    { OP_SUB, "sub" },
+    { OP_MUL, "mul" },
+    { OP_DIV, "div" },
 
-    { PUSHV, "pushv" },
+    { OP_PUSHV, "pushv" },
 
-    { PRINT, "print" },
-    { WAIT, "wait" },
+    { OP_PRINT, "print" },
+    { OP_WAIT, "wait" },
 
-    { RETURN, "return" },
+    { OP_RETURN, "return" },
 
-    { WRITE_DATA, "write" },
-    { READ_DATA, "read" },
+    { OP_WRITE_DATA, "write" },
+    { OP_READ_DATA, "read" },
 
-    { CALL, "call" },
+    { OP_CALL, "call" },
 };
 
 void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace) 
@@ -51,7 +51,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
 
         switch (opcode)
         {
-        case WRITE_DATA:
+        case OP_WRITE_DATA:
             {
                 Object* address = this->pop_stack();
                 if (Integer* integer = dynamic_cast<Integer*>(address)) {
@@ -59,7 +59,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 } else errorf("Address for data write must be a integer");
             }
             break;
-        case READ_DATA:
+        case OP_READ_DATA:
             {
                 Object* address = data; 
                 
@@ -69,7 +69,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 } else this->errorf("Address for data read must be a integer");
             }
             break;
-        case CALL:
+        case OP_CALL:
             {
                 Object* data = this->pop_stack();
                 if (Function* function = dynamic_cast<Function*>(data)) {
@@ -77,7 +77,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 } else this->errorf("No function to call in stack");
             }
             break;
-        case ADD:
+        case OP_ADD:
             {
                 Object* obj1 = this->pop_stack();
                 Object* obj2 = this->pop_stack();
@@ -101,7 +101,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 this->errorf("Add operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
             }
             break;
-        case SUB:
+        case OP_SUB:
             {
                Object* obj1 = this->pop_stack();
                 Object* obj2 = this->pop_stack();
@@ -125,7 +125,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 this->errorf("Substract operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
             }
             break;
-        case MUL:
+        case OP_MUL:
             {
                 Object* obj1 = this->pop_stack();
                 Object* obj2 = this->pop_stack();
@@ -149,7 +149,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 this->errorf("Multiply operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
             }
             break;
-        case DIV:
+        case OP_DIV:
              {
                Object* obj1 = this->pop_stack();
                 Object* obj2 = this->pop_stack();
@@ -173,17 +173,17 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 this->errorf("Divide operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
             }
             break;
-        case PUSHV:
+        case OP_PUSHV:
             {
                 this->push_stack(data);
             }
             break;
-        case RETURN:
+        case OP_RETURN:
             {
                 return;
             }
             break;
-        case PRINT:
+        case OP_PRINT:
             {
                 string to_print = this->pop_stack()->tostring();
 
@@ -208,7 +208,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 cout << endl;
             }
             break;
-        case WAIT:
+        case OP_WAIT:
             {
                 Object* object = this->pop_stack();
 

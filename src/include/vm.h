@@ -10,22 +10,22 @@ using namespace std;
 
 enum Opcode 
 {
-    ADD = 0x1,
-    SUB = 0x2,
-    MUL = 0x3,
-    DIV = 0x4,
+    OP_ADD = 0x1,
+    OP_SUB = 0x2,
+    OP_MUL = 0x3,
+    OP_DIV = 0x4,
 
-    PUSHV = 0x5,
+    OP_PUSHV = 0x5,
 
-    PRINT = 0x6,
-    WAIT = 0x7,
+    OP_PRINT = 0x6,
+    OP_WAIT = 0x7,
 
-    WRITE_DATA = 0x8,
-    READ_DATA = 0x9,
+    OP_WRITE_DATA = 0x8,
+    OP_READ_DATA = 0x9,
 
-    RETURN = 0x10,
+    OP_RETURN = 0x10,
 
-    CALL = 0x11,
+    OP_CALL = 0x11,
 };
 
 struct Object
