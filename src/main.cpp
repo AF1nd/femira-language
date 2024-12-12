@@ -1,4 +1,4 @@
-#include "src/include/vm.h"
+#include "include/vm.h"
 
 int main()
 {
