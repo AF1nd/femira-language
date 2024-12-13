@@ -7,7 +7,7 @@
 int main()
 {
     
-    Lexer lexer("\"faa zz5\" 55.2", true);
+    Lexer lexer("\"faa zz5\"", true);
     lexer.make_tokens();
 
     /*FemiraVirtualMachine vm;
