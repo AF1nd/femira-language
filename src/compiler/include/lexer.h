@@ -9,11 +9,6 @@ using namespace std;
 
 enum TokenType 
 {
-    INT_TYPE,
-    NULL_LITERAL,
-    STRING_TYPE,
-    DOUBLE_TYPE,
-
     IDENTIFIER,
     STRING,
     DIGIT,
@@ -33,8 +28,16 @@ enum TokenType
     BIGGER_OR_EQ,
     SMALLER_OR_EQ,
     
+    NOT,
+
     BEGIN,
     END,
+
+    IF,
+    ELSE,
+
+    WHILE,
+    FOR,
 
     FUNCTION,
 

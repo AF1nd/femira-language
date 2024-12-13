@@ -7,7 +7,7 @@
 int main()
 {
     
-    Lexer lexer("\"faa zz5\"", true);
+    Lexer lexer("int a := 5 string b := \"faa zz5\" if else while ", true);
     lexer.make_tokens();
 
     /*FemiraVirtualMachine vm;
