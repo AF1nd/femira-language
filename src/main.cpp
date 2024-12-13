@@ -6,7 +6,11 @@
 
 int main()
 {
-    FemiraVirtualMachine vm;
+    
+    Lexer lexer("\"faa zz5\" 55.2", true);
+    lexer.make_tokens();
+
+    /*FemiraVirtualMachine vm;
 
     auto start = chrono::high_resolution_clock::now();
 
@@ -31,7 +35,7 @@ int main()
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed_seconds = end - start;
 
-    cout << "Elapsed time: " << elapsed_seconds.count() << " seconds\n";
+    cout << "Elapsed time: " << elapsed_seconds.count() << " seconds" << endl;*/
 
     return 0;
 }

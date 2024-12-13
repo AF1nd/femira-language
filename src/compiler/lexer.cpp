@@ -7,6 +7,12 @@
 
 using namespace std;
 
+bool is_char_quote(char c)
+{
+    if (c == '\'' || c == '\"') return true;
+    return false;
+}
+
 Lexer::Lexer(string code, bool trace) 
 {
     this->trace = trace;
@@ -21,6 +27,7 @@ vector<Token*> Lexer::make_tokens()
         if (token == nullptr) break;
         
         this->tokens.push_back(token);
+        this->position++;
     }
 
     if (this->trace) {
@@ -34,5 +41,44 @@ vector<Token*> Lexer::make_tokens()
 
 Token* Lexer::next_token()
 {
+    int current_position = this->position;
+    int start_position = this->position;
+
+    char current_char = this->code.at(start_position);
+
+    if (current_char == ' ') return new Token(WHITESPACE, " ", start_position);
+
+    if (is_char_quote(current_char)) 
+    {
+        string buffer;
+        for (size_t i = start_position + 1; i < this->code.size(); ++i) 
+        {
+            current_position = i;
+            this->position = i;
+
+            current_char = this->code.at(current_position);
+
+            if (is_char_quote(current_char)) break;
+            else buffer.push_back(current_char);
+        }
+
+        return new Token(STRING, buffer, start_position);
+    } else if (isdigit(current_char))
+    {
+        string buffer;
+        for (size_t i = start_position; i < this->code.size(); ++i) 
+        {
+            current_position = i;
+            this->position = i;
+
+            current_char = this->code.at(current_position);
+
+            if (isdigit(current_char) || current_char == '.') buffer.push_back(current_char);
+            else break;
+        }
+
+        return new Token(DIGIT, buffer, start_position);
+    }
+
     return nullptr;
 }

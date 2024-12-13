@@ -73,7 +73,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
             {
                 Object* data = this->pop_stack();
                 if (Function* function = dynamic_cast<Function*>(data)) {
-                    runf_bytecode(function->bytecode, trace);
+                    this->runf_bytecode(function->bytecode, trace);
                 } else this->errorf("No function to call in stack");
             }
             break;
