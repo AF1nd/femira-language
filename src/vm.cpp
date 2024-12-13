@@ -38,7 +38,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
         {
             Opcode opcode = instruction.opcode;
             Object* data = instruction.data;
-            cout << opcode << ":    " + opcode_to_string[opcode] << "    " << (data != nullptr ? data->tostring() : "") << endl;
+            cout << opcode << ":    " + opcode_to_string[opcode] << "    " << (data ? data->tostring() : "") << endl;
         }
 
         cout << "<RESULT>" << endl;
@@ -234,14 +234,14 @@ void FemiraVirtualMachine::errorf(const string text)
 
 void FemiraVirtualMachine::push_stack(Object* data)
 {
-    if (data == nullptr) this->errorf("Cannot push null pointer to stack");
+    if (!data) this->errorf("Cannot push null pointer to stack");
     this->run_stack.push(data);
 }
 
 Object* FemiraVirtualMachine::pop_stack() 
 {
     Object* top = this->run_stack.top();
-    if (top == nullptr) this->errorf("Stack is empty");
+    if (!top) this->errorf("Stack is empty");
 
     this->run_stack.pop();
 

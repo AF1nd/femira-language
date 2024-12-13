@@ -10,14 +10,20 @@ using namespace std;
 enum TokenType 
 {
     IDENTIFIER,
+
     STRING,
     DIGIT,
+    NIL,
+    TRUE,
+    FALSE,
 
     PLUS,
     MINUS,
     ASTERISK,
     SLASH,
     ASSIGN,
+
+    ANNOTATE,
 
     EQ,
     NOTEQ,
@@ -44,6 +50,9 @@ enum TokenType
     LPAREN,
     RPAREN,
 
+    LSQPAREN,
+    RSQPAREN,
+
     COMMA,
     DOT,
     ARROW,
@@ -52,6 +61,7 @@ enum TokenType
     PRINT,
 
     WHITESPACE,
+    SEMICOLON,
     NEWLINE,
 };
 

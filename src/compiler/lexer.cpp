@@ -32,19 +32,23 @@ vector<Token*> Lexer::make_tokens()
 {
     while (this->position < this->code.size()) {
         Token* token = this->next_token();
-        if (token == nullptr) break;
+        if (!token) break;
         
         this->tokens.push_back(token);
         this->position++;
     }
 
+    vector<Token*> filtered;
+
+    copy_if(this->tokens.begin(), this->tokens.end(), std::back_inserter(filtered), [](Token* token){ return token->type != WHITESPACE; } );
+
     if (this->trace) {
-        for (Token* token_ptr: this->tokens) {
+        for (Token* token_ptr: filtered) {
             cout << token_ptr->type << " | " << token_ptr->value << endl;
         }
     }
 
-    return this->tokens;
+    return filtered;
 }
 
 Token* Lexer::next_token()
@@ -54,7 +58,6 @@ Token* Lexer::next_token()
 
     char current_char = this->code.at(start_position);
     char* next_char = get_char_at_position(this->code, start_position + 1);
-
 
     if (current_char == ' ') return new Token(WHITESPACE, " ", start_position);
     else if (current_char == '\n')
@@ -102,21 +105,23 @@ Token* Lexer::next_token()
         return new Token(DIGIT, buffer, start_position);
     } else if (current_char == ':')
     {
-        if (next_char != nullptr && *next_char == '=')
+        if (next_char && *next_char == '=')
         {
             this->position++;
             return new Token(ASSIGN, ":=", start_position);
         }
+
+        return new Token(ANNOTATE, ":", start_position);
     } else if (current_char == '?')
     {
-        if (next_char != nullptr && *next_char == '=')
+        if (next_char && *next_char == '=')
         {
             this->position++;
             return new Token(EQ, "?=", start_position);
         }
     } else if (current_char == '!')
     {
-        if (next_char != nullptr && *next_char == '=')
+        if (next_char && *next_char == '=')
         {
             this->position++;
             return new Token(NOTEQ, "!=", start_position);
@@ -125,7 +130,7 @@ Token* Lexer::next_token()
         return new Token(NOT, "!", start_position);
     } else if (current_char == '>')
     {
-        if (next_char != nullptr && *next_char == '=')
+        if (next_char && *next_char == '=')
         {
             this->position++;
             return new Token(BIGGER_OR_EQ, ">=", start_position);
@@ -134,7 +139,7 @@ Token* Lexer::next_token()
         return new Token(BIGGER, ">", start_position);
     } else if (current_char == '<')
     {
-        if (next_char != nullptr && *next_char == '=')
+        if (next_char && *next_char == '=')
         {
             this->position++;
             return new Token(SMALLER_OR_EQ, "<=", start_position);
@@ -143,7 +148,7 @@ Token* Lexer::next_token()
         return new Token(SMALLER, "<", start_position);
     } else if (current_char == '-')
     {
-        if (next_char != nullptr && *next_char == '>')
+        if (next_char && *next_char == '>')
         {
             this->position++;
             return new Token(ARROW, "->", start_position);
@@ -159,11 +164,15 @@ Token* Lexer::next_token()
     else if (current_char == '{')return new Token(BEGIN, "{", start_position); 
     else if (current_char == '}') return new Token(END, "}", start_position);
 
-    else if (current_char == '(')return new Token(LPAREN, "(", start_position); 
+    else if (current_char == '(') return new Token(LPAREN, "(", start_position); 
     else if (current_char == ')') return new Token(RPAREN, ")", start_position);
+
+    else if (current_char == '[') return new Token(LSQPAREN, "[", start_position); 
+    else if (current_char == ']') return new Token(RSQPAREN, "]", start_position);
 
     else if (current_char == '.') return new Token(DOT, ".", start_position); 
     else if (current_char == ',') return new Token(COMMA, ",", start_position);
+    else if (current_char == ';') return new Token(SEMICOLON, ";", start_position);
 
     else
     {
@@ -174,6 +183,12 @@ Token* Lexer::next_token()
             this->position = i;
 
             current_char = this->code.at(current_position);
+
+            if (!isalpha(current_char) && !isdigit(current_char))
+            {
+                this->position--;
+                break;
+            }
 
             if (current_char == ' ') break;
 
@@ -188,6 +203,11 @@ Token* Lexer::next_token()
 
             else if (buffer == "while") return new Token(WHILE, buffer, start_position);
             else if (buffer == "for") return new Token(FOR, buffer, start_position);
+
+            else if (buffer == "true") return new Token(TRUE, buffer, start_position);
+            else if (buffer == "false") return new Token(FALSE, buffer, start_position);
+            
+            else if (buffer == "nil") return new Token(NIL, buffer, start_position);
         }
 
         return new Token(IDENTIFIER, buffer, start_position);

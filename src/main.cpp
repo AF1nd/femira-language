@@ -3,12 +3,19 @@
 
 #include "include/vm.h"
 #include "compiler/include/lexer.h"
+#include "compiler/include/parser.h"
 
 int main()
 {
-    
-    Lexer lexer("int a := 5 string b := \"faa zz5\" if else while ", true);
-    lexer.make_tokens();
+    string code = "\
+        fn foo (a: int, b: double) -> int { \
+            \
+        } \
+    ";
+
+    Lexer lexer(code, false);
+    Parser parser(lexer.make_tokens());
+    parser.make_ast(true);
 
     /*FemiraVirtualMachine vm;
 
