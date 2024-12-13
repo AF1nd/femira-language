@@ -8,7 +8,7 @@
 int main()
 {
     string code = "\
-        fn foo (a: int, b: double) -> int { \
+        fn foo(a: int, b: double) -> int { \
             \
         } \
     ";
