@@ -8,7 +8,7 @@
 int main()
 {
     string code = "\
-        5 + (5 * 5 + 5) * 5 \
+        (5 + 5 - 5) != 5 + 5 & true \
     ";
 
     Lexer lexer(code, false);

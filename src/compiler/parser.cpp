@@ -172,10 +172,7 @@ BlockNode* Parser::make_ast(bool trace)
 
     if (trace)
     {
-        for (AstNode* node: ast->nodes)
-        {
-            cout << node->tostring() << endl;
-        }
+        for (AstNode* node: ast->nodes) cout << node->tostring() << endl;
     }
 
     return ast;
@@ -184,6 +181,8 @@ BlockNode* Parser::make_ast(bool trace)
 AstNode* Parser::parse_expression(bool ignore_binaries)
 {   
     AstNode* expression;
+
+    int started_position = this->position;
 
     if (this->is_token({ FUNCTION }, this->position)) expression = this->parse_function();
     else if (this->is_token(literal_token_types, this->position)) expression = this->parse_literal();
@@ -196,7 +195,7 @@ AstNode* Parser::parse_expression(bool ignore_binaries)
 
     if (expression)
     {
-        AstNode* subparsed = this->subparse(expression, ignore_binaries);
+        AstNode* subparsed = this->subparse(expression, started_position, ignore_binaries);
         if (subparsed) expression = subparsed;
     }
 
@@ -245,7 +244,7 @@ ArrayNode* Parser::parse_array()
     return new ArrayNode(elements);
 }
 
-AstNode* Parser::subparse(AstNode* expression, bool ignore_binaries)
+AstNode* Parser::subparse(AstNode* expression, int started_position, bool ignore_binaries)
 {
     AstNode* subparsed = expression;
     bool is_subparsed = false;
@@ -262,14 +261,14 @@ AstNode* Parser::subparse(AstNode* expression, bool ignore_binaries)
     }
     if (this->is_token(binary_token_types, this->position) && !ignore_binaries)
     {
-        this->position--;
+        this->position = started_position;
         is_subparsed = true;
         subparsed = this->parse_binary();
     }
 
     if (is_subparsed)
     {
-        AstNode* deep_subparsed = this->subparse(subparsed, ignore_binaries);
+        AstNode* deep_subparsed = this->subparse(subparsed, started_position, ignore_binaries);
         if (deep_subparsed) subparsed = deep_subparsed;
     }
 
@@ -286,11 +285,11 @@ WhileNode* Parser::parse_while()
     return new WhileNode(condition, block);
 }
 
-BinaryOperationNode* Parser::parse_binary()
+AstNode* Parser::parse_binary()
 {
     AstNode* left = this->term();
 
-    while (this->match({ PLUS, MINUS }))
+    while (this->match({ AND, OR, ASSIGN, EQ, NOTEQ, BIGGER, SMALLER, BIGGER_OR_EQ, SMALLER_OR_EQ }))
     {
         Token* operator_token = this->tokens.at(this->position - 1);
 
@@ -299,14 +298,30 @@ BinaryOperationNode* Parser::parse_binary()
         left = new BinaryOperationNode(left, operator_token, right);
     }
 
-    return dynamic_cast<BinaryOperationNode*>(left);
+    return left;
 }
 
 AstNode* Parser::term()
 {
+    AstNode* left = this->subterm();
+
+    while (this->match({ ASTERISK, SLASH }))
+    {
+        Token* operator_token = this->tokens.at(this->position - 1);
+
+        AstNode* right = this->subterm();
+
+        left = new BinaryOperationNode(left, operator_token, right);
+    }
+
+    return left;
+}
+
+AstNode* Parser::subterm()
+{
     AstNode* left = this->parse_expression(true);
 
-    while (this->match({ ASTERISK, SLASH, AND, OR, ASSIGN, EQ, NOTEQ, BIGGER, SMALLER, BIGGER_OR_EQ, SMALLER_OR_EQ }))
+    while (this->match({ PLUS, MINUS }))
     {
         Token* operator_token = this->tokens.at(this->position - 1);
 

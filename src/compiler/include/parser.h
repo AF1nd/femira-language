@@ -205,8 +205,9 @@ class Parser
         CallNode* parse_call(AstNode* to_call);
         IndexationNode* parse_indexation(AstNode* where);
 
-        BinaryOperationNode* parse_binary();
+        AstNode* parse_binary();
         AstNode* term();
+        AstNode* subterm();
 
         UnaryOperationNode* parse_unary();
         WhileNode* parse_while();
@@ -223,7 +224,7 @@ class Parser
 
         bool is_token(vector<TokenType> types, int position);
 
-        AstNode* subparse(AstNode* node, bool ignore_binaries = false);
+        AstNode* subparse(AstNode* node, int started_position, bool ignore_binaries = false);
         AstNode* parse_expression(bool ignore_binaries = false);
 
         void parser_errorf(string text);
