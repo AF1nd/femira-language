@@ -8,9 +8,7 @@
 int main()
 {
     string code = "\
-        fn foo(a: int, b: double) -> int { \
-            \
-        } \
+        5 + (5 * 5 + 5) * 5 \
     ";
 
     Lexer lexer(code, false);

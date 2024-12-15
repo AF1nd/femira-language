@@ -33,6 +33,9 @@ enum TokenType
 
     BIGGER_OR_EQ,
     SMALLER_OR_EQ,
+
+    AND,
+    OR,
     
     NOT,
 

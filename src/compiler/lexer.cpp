@@ -99,7 +99,11 @@ Token* Lexer::next_token()
             current_char = this->code.at(current_position);
 
             if (isdigit(current_char) || current_char == '.') buffer.push_back(current_char);
-            else break;
+            else
+            {
+                this->position--;
+                break;
+            };
         }
 
         return new Token(DIGIT, buffer, start_position);
@@ -148,11 +152,21 @@ Token* Lexer::next_token()
         return new Token(SMALLER, "<", start_position);
     } else if (current_char == '-')
     {
-        if (next_char && *next_char == '>')
+        if (next_char)
         {
-            this->position++;
-            return new Token(ARROW, "->", start_position);
-        } 
+            if (*next_char == '>')
+            {
+                this->position++;
+                return new Token(ARROW, "->", start_position);
+            } else if (isdigit(*next_char))
+            {
+                this->position++;
+                Token* number = this->next_token();
+                number->value = "-" + number->value;
+
+                return number;
+            }
+        }
 
         return new Token(MINUS, "-", start_position);
     } 
@@ -160,6 +174,9 @@ Token* Lexer::next_token()
     else if (current_char == '+') return new Token(PLUS, "+", start_position);
     else if (current_char == '/') return new Token(SLASH, "/", start_position);
     else if (current_char == '*') return new Token(ASTERISK, "*", start_position); 
+
+    else if (current_char == '&') return new Token(AND, "&", start_position);
+    else if (current_char == '|') return new Token(OR, "|", start_position);
 
     else if (current_char == '{')return new Token(BEGIN, "{", start_position); 
     else if (current_char == '}') return new Token(END, "}", start_position);
