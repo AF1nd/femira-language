@@ -192,12 +192,13 @@ AstNode* Parser::parse_expression(bool ignore_binaries)
     else if (this->is_token({ LSQPAREN }, this->position)) expression = this->parse_array();
     else if (this->is_token({ BEGIN }, this->position)) expression = this->parse_object();
     else if (this->is_token({ WHILE }, this->position)) expression = this->parse_while();
+    else if (this->is_token({ TYPE }, this->position)) expression = this->parse_typedef();
 
     if (expression)
     {
         AstNode* subparsed = this->subparse(expression, started_position, ignore_binaries);
         if (subparsed) expression = subparsed;
-    }
+    } else this->parser_errorf("Cannot parse expression");
 
     return expression;
 }
@@ -331,6 +332,19 @@ AstNode* Parser::subterm()
     }
 
     return left;
+}
+
+TypedefNode* Parser::parse_typedef()
+{
+    this->eat({ TYPE });
+
+    IdentifierNode* id = this->parse_identifier();
+
+    this->eat({ ASSIGN });
+
+    AstNode* type = this->parse_expression();
+
+    return new TypedefNode(id, type);
 }
 
 UnaryOperationNode* Parser::parse_unary()

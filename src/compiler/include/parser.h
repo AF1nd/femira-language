@@ -177,6 +177,23 @@ struct FunctionNode : AstNode
     }
 };
 
+struct TypedefNode : AstNode
+{
+    IdentifierNode* id;
+    AstNode* type;
+
+    TypedefNode(IdentifierNode* id, AstNode* type)
+    {
+        this->id = id;
+        this->type = type;
+    }
+
+    string tostring() override
+    {
+        return "typedefinition: " + this->id->token->value + " = " + this->type->tostring();
+    }
+};
+
 struct CallNode : AstNode
 {
     AstNode* to_call;
@@ -218,6 +235,7 @@ class Parser
         ObjectNode* parse_object();
         ArrayNode* parse_array();
         ParenthisizedNode* parse_parenthisized();
+        TypedefNode* parse_typedef();
 
         Token* eat(vector<TokenType> types);
         bool match(vector<TokenType> types);

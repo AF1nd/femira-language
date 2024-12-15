@@ -24,6 +24,7 @@ enum TokenType
     ASSIGN,
 
     ANNOTATE,
+    TYPE,
 
     EQ,
     NOTEQ,

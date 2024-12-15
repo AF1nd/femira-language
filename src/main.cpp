@@ -8,7 +8,7 @@
 int main()
 {
     string code = "\
-        (5 + 5 - 5) != 5 + 5 & true \
+        typedef Integer := int \
     ";
 
     Lexer lexer(code, false);
