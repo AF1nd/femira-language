@@ -26,11 +26,24 @@ enum Opcode
     OP_RETURN = 0x10,
 
     OP_CALL = 0x11,
+
+    OP_AND = 0x12,
+    OP_OR = 0x13,
+    OP_EQ = 0x14,
+    OP_NOTEQ = 0x15,
+    OP_BIGGER = 0x16,
+    OP_SMALLER = 0x17,
+    OP_BIGGEROREQ = 0x18,
+    OP_SMALLEROREQ = 0x19,
+
+    OP_JUMP = 0x20,
+    OP_JUMPIFNOT = 0x21,
 };
 
 struct Object
 {
     virtual string tostring() { return "unknown datatype"; };
+    virtual bool is_eq(Object* with) { return false; };
 };
 
 struct Instruction
@@ -51,7 +64,19 @@ struct String : Object
     {
         return this->data + " (string)";
     }
+
+    bool is_eq(Object* with) override
+    {
+        if (String* string = dynamic_cast<String*>(with))
+        {
+            return string->data == this->data;
+        }
+
+        return false;
+    }
 };
+
+struct Double;
 
 struct Integer : Object
 {
@@ -61,6 +86,16 @@ struct Integer : Object
     string tostring() override 
     {
         return to_string(this->data) + " (int)";
+    }
+
+    bool is_eq(Object* with) override
+    {
+        if (Integer* integer = dynamic_cast<Integer*>(with))
+        {
+            return integer->data == this->data;
+        }
+
+        return false;
     }
 };
 
@@ -73,6 +108,16 @@ struct Double : Object
     {
         return to_string(this->data) + " (double)";
     }
+
+    bool is_eq(Object* with) override
+    {
+        if (Double* doub = dynamic_cast<Double*>(with))
+        {
+            return doub->data == this->data;
+        }
+
+        return false;
+    }
 }; 
 
 struct Function : Object
@@ -80,28 +125,91 @@ struct Function : Object
     Bytecode bytecode;
     int args_number;
 
+    map<int, string> args_ids;
+
     Function(Bytecode bytecode, int args_number) { this->bytecode = bytecode; this->args_number = args_number; };
 
     string tostring() override 
     {
         return "(function)";
     }
-};
 
-struct Null : Object {
-    string tostring() override 
+    bool is_eq(Object* with) override
     {
-        return "null";
+        return false;
     }
 };
 
+struct IfStatement : Object
+{
+    Bytecode bytecode;
+    Bytecode else_bytecode;
+
+    IfStatement(Bytecode bytecode, Bytecode else_bytecode) { this->bytecode = bytecode; this->else_bytecode = else_bytecode; };
+
+    string tostring() override 
+    {
+        return "if (if statement)";
+    }
+};
+
+struct WhileStatement : Object
+{
+    Bytecode bytecode;
+
+    WhileStatement(Bytecode bytecode) { this->bytecode = bytecode; };
+
+    string tostring() override 
+    {
+        return "while (while statement)";
+    }
+};
+
+struct Null : Object 
+{
+    string tostring() override 
+    {
+        return "null (null)";
+    }
+
+    bool is_eq(Object* with) override
+    {
+        if (Null* null = dynamic_cast<Null*>(with)) return true;
+
+        return false;
+    }
+};
+
+struct Boolean : Object
+{
+    bool data;
+
+    Boolean(bool data)
+    {
+        this->data = data;
+    }
+
+    string tostring() override 
+    {
+        return this->data ? "true (boolean)" : "false";
+    }
+
+    bool is_eq(Object* with) override
+    {
+        if (Boolean* boolean = dynamic_cast<Boolean*>(with)) return this->data == boolean->data;
+
+        return false;
+    }
+};
 
 class FemiraVirtualMachine 
 {
     private:
         Bytecode running_bytecode;
         stack<Object*> run_stack;
-        map<int, Object*> memory;
+        map<string, Object*> memory;
+
+        int instruction_pointer = 0;
     public:
         map<int, Bytecode> callable_bytecodes;
         

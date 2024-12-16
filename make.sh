@@ -1,2 +1,2 @@
-g++ src/main.cpp src/vm.cpp src/compiler/lexer.cpp src/compiler/parser.cpp -o interpreters/feminter.out
-x86_64-w64-mingw32-c++ src/main.cpp src/vm.cpp src/compiler/lexer.cpp src/compiler/parser.cpp -o interpreters/feminter.exe
+g++ src/main.cpp src/vm.cpp src/compiler/lexer.cpp src/compiler/parser.cpp src/compiler/compiler_main.cpp -o interpreters/feminter.out
+x86_64-w64-mingw32-c++ src/main.cpp src/vm.cpp src/compiler/lexer.cpp src/compiler/parser.cpp src/compiler/compiler_main.cpp -o interpreters/feminter.exe

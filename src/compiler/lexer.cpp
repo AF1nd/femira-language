@@ -25,7 +25,7 @@ Lexer::Lexer(string code, bool trace)
     this->trace = trace;
     this->code = code;
     this->position = 0;
-    this->line = 1;
+    this->line = 0;
 }
 
 vector<Token*> Lexer::make_tokens() 
@@ -229,8 +229,10 @@ Token* Lexer::next_token()
             else if (buffer == "typedef") return new Token(TYPE, buffer, start_position);
         }
 
-        return new Token(IDENTIFIER, buffer, start_position);
+        if (!buffer.empty()) return new Token(IDENTIFIER, buffer, start_position);
     }
+
+    throw runtime_error("Unexpected token '" + string { current_char } + "' at position " + to_string(start_position) + ", line: " + to_string(this->line));
 
     return nullptr;
 }

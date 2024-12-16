@@ -193,6 +193,7 @@ AstNode* Parser::parse_expression(bool ignore_binaries)
     else if (this->is_token({ BEGIN }, this->position)) expression = this->parse_object();
     else if (this->is_token({ WHILE }, this->position)) expression = this->parse_while();
     else if (this->is_token({ TYPE }, this->position)) expression = this->parse_typedef();
+    else if (this->is_token({ IF }, this->position)) expression = this->parse_if();
 
     if (expression)
     {
@@ -201,6 +202,25 @@ AstNode* Parser::parse_expression(bool ignore_binaries)
     } else this->parser_errorf("Cannot parse expression");
 
     return expression;
+}
+
+IfNode* Parser::parse_if()
+{
+    this->eat({ IF });
+
+    AstNode* condition = this->parse_expression();
+    BlockNode* success_block = this->parse_block();
+    
+    BlockNode* fail_block = new BlockNode({});
+
+    if (this->is_token({ ELSE }, this->position))
+    {
+        this->eat({ ELSE });
+
+        fail_block = this->parse_block();
+    }
+
+    return new IfNode(success_block, fail_block, condition);
 }
 
 ObjectNode* Parser::parse_object()
@@ -288,9 +308,25 @@ WhileNode* Parser::parse_while()
 
 AstNode* Parser::parse_binary()
 {
+    AstNode* left = this->headterm();
+
+    while (this->match({ AND, OR }))
+    {
+        Token* operator_token = this->tokens.at(this->position - 1);
+
+        AstNode* right = this->headterm();
+
+        left = new BinaryOperationNode(left, operator_token, right);
+    }
+
+    return left;
+}
+
+AstNode* Parser::headterm()
+{
     AstNode* left = this->term();
 
-    while (this->match({ AND, OR, ASSIGN, EQ, NOTEQ, BIGGER, SMALLER, BIGGER_OR_EQ, SMALLER_OR_EQ }))
+    while (this->match({ ASSIGN, EQ, NOTEQ, BIGGER, SMALLER, BIGGER_OR_EQ, SMALLER_OR_EQ }))
     {
         Token* operator_token = this->tokens.at(this->position - 1);
 

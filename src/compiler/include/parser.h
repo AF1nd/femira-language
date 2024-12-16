@@ -143,7 +143,12 @@ struct IfNode : AstNode
     BlockNode* fail_block;
     AstNode* condition;
 
-    IfNode(BlockNode* success_block, BlockNode* fail_block, AstNode* condition) { this->success_block = success_block; this->fail_block = fail_block; this->condition; };
+    string tostring() override
+    {
+        return "if " + this->condition->tostring();
+    }
+
+    IfNode(BlockNode* success_block, BlockNode* fail_block, AstNode* condition) { this->success_block = success_block; this->fail_block = fail_block; this->condition = condition; };
 };
 
 struct WhileNode : AstNode
@@ -152,6 +157,11 @@ struct WhileNode : AstNode
     BlockNode* block;
 
     WhileNode(AstNode* condition, BlockNode* block) { this->condition = condition; this->block = block; };
+
+    string tostring() override
+    {
+        return "while " + this->condition->tostring();
+    }
 };
 
 struct FunctionNode : AstNode
@@ -225,6 +235,7 @@ class Parser
         AstNode* parse_binary();
         AstNode* term();
         AstNode* subterm();
+        AstNode* headterm();
 
         UnaryOperationNode* parse_unary();
         WhileNode* parse_while();
