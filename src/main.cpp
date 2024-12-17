@@ -1,11 +1,14 @@
 #include <time.h> 
 #include <chrono>
 #include <fstream>
+#include <string>
 
 #include "include/vm.h"
 #include "compiler/include/lexer.h"
 #include "compiler/include/parser.h"
 #include "compiler/include/compiler_main.h"
+
+using namespace std;
 
 int main(int argc, char** argv)
 {
@@ -28,10 +31,11 @@ int main(int argc, char** argv)
     BlockNode* ast = parser.make_ast(false);
 
     CompilerMain compiler;
-    FemiraVirtualMachine vm;
 
     compiler.node_to_bytecode(ast);
-    vector<Instruction> bytecode = compiler.get_generated_bytecode();
+    Bytecode bytecode = compiler.get_generated_bytecode();
+
+    FemiraVirtualMachine vm;
 
     string show_bytecode = argc > 2 ? argv[2] : "";
 

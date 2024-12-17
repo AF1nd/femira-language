@@ -50,6 +50,8 @@ struct Object
 {
     virtual string tostring() { return "unknown datatype"; };
     virtual bool is_eq(Object* with) { return false; };
+
+    Object() = default;
 };
 
 struct Memory
@@ -94,10 +96,28 @@ struct Instruction
 {
     Opcode opcode;
     Object* data;
+
     Instruction(Opcode opcode, Object* data = nullptr) { this->opcode = opcode; this->data = data; };
+
+    Instruction() = default;
 };
 
 using Bytecode = vector<Instruction>;
+
+struct Null : Object 
+{
+    string tostring() override 
+    {
+        return "null (null)";
+    }
+
+    bool is_eq(Object* with) override
+    {
+        if (Null* null = dynamic_cast<Null*>(with)) return true;
+
+        return false;
+    }
+};
 
 struct String : Object 
 {
@@ -181,46 +201,6 @@ struct Function : Object
 
     bool is_eq(Object* with) override
     {
-        return false;
-    }
-};
-
-struct IfStatement : Object
-{
-    Bytecode bytecode;
-    Bytecode else_bytecode;
-
-    IfStatement(Bytecode bytecode, Bytecode else_bytecode) { this->bytecode = bytecode; this->else_bytecode = else_bytecode; };
-
-    string tostring() override 
-    {
-        return "if (if statement)";
-    }
-};
-
-struct WhileStatement : Object
-{
-    Bytecode bytecode;
-
-    WhileStatement(Bytecode bytecode) { this->bytecode = bytecode; };
-
-    string tostring() override 
-    {
-        return "while (while statement)";
-    }
-};
-
-struct Null : Object 
-{
-    string tostring() override 
-    {
-        return "null (null)";
-    }
-
-    bool is_eq(Object* with) override
-    {
-        if (Null* null = dynamic_cast<Null*>(with)) return true;
-
         return false;
     }
 };
