@@ -67,7 +67,9 @@ enum TokenType
     WHITESPACE,
     SEMICOLON,
     NEWLINE,
-};
+
+    WAIT,
+};  
 
 struct Token 
 {

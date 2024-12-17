@@ -1,9 +1,17 @@
-i := 0
 
-array := ["один", "дваа", 3, 4, 5]
+a := 0
 
-while i < 5 {
-    print array[i]
-
-    i := i + 1
+fn foo() -> nil {
+    a := a + 1
 }
+
+fn exec() -> nil {
+    while a < 10 {
+        foo()
+        print a
+
+        wait 1
+    }
+}
+
+exec()

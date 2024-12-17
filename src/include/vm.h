@@ -52,6 +52,44 @@ struct Object
     virtual bool is_eq(Object* with) { return false; };
 };
 
+struct Memory
+{
+    map<string, Object*> cells;
+    vector<Memory*> sub_memories;
+
+    Memory* parent;
+
+    void write_data(string key, Object* value)
+    {
+        if (this->cells.find(key) != this->cells.end())
+        {
+            if (this->cells.at(key) == value) return;
+        }
+
+        this->cells[key] = value;
+
+        for (Memory* sub_memory: this->sub_memories)
+        {
+            sub_memory->write_data(key, value);
+        }
+
+        Memory* d_parent = this->parent;
+        while (d_parent)
+        {
+            if (d_parent->cells.find(key) == d_parent->cells.end()) break;
+            
+            d_parent->write_data(key, value);
+            d_parent = d_parent->parent;
+        }
+    }
+
+    Object* read_data(string key)
+    {
+        if (this->cells.find(key) == this->cells.end()) throw runtime_error("Cannot find value by id " + key);
+        return this->cells[key];
+    }
+};
+
 struct Instruction
 {
     Opcode opcode;
@@ -132,6 +170,7 @@ struct Function : Object
     int args_number;
 
     map<int, string> args_ids;
+    Memory* defined_in;
 
     Function(Bytecode bytecode, int args_number) { this->bytecode = bytecode; this->args_number = args_number; };
 
@@ -237,13 +276,12 @@ class FemiraVirtualMachine
     private:
         Bytecode running_bytecode;
         stack<Object*> run_stack;
-        map<string, Object*> memory;
 
         int instruction_pointer = 0;
     public:
         map<int, Bytecode> callable_bytecodes;
         
-        void runf_bytecode(const Bytecode bytecode, const bool trace = false);
+        void runf_bytecode(const Bytecode bytecode, const bool trace = false, Memory* memory = new Memory());
         void errorf(const string text);
 
         void push_stack(Object* data);

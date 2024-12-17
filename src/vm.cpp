@@ -47,7 +47,7 @@ map<Opcode, string> opcode_to_string = {
     { OP_NEWOBJECT, "newobject" }
 };
 
-void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace) 
+void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace, Memory* memory) 
 {
     this->instruction_pointer = 0;
     this->running_bytecode = bytecode;
@@ -82,7 +82,11 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
 
                 if (String* string = dynamic_cast<String*>(address)) 
                 {
-                    this->memory[string->data] = data;
+                    memory->write_data(string->data, data);
+
+                    if (Function* function = dynamic_cast<Function*>(data)) function->defined_in = memory;
+
+                    break;
                 } else errorf("Address for data write must be a string");
             }
             break;
@@ -92,8 +96,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 
                 if (String* string = dynamic_cast<String*>(address)) 
                 {
-                    if (this->memory.find(string->data) != this->memory.end()) push_stack(this->memory.at(string->data));
-                    else this->errorf("Memory cell " + string->tostring() + " is empty");
+                    push_stack(memory->read_data(string->data));
                 } else this->errorf("Address for data read must be a string");
             }
             break;
@@ -131,30 +134,32 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
 
                 if (Function* function = dynamic_cast<Function*>(data)) 
                 {
-                    map<string, Object*> old_memory = this->memory;
                     int ip = this->instruction_pointer;
 
                     vector<string> args_ids;
 
+                    Memory* defined_in_memory = function->defined_in;
+                    Memory* new_memory = new Memory();
+
+                    for (pair<string, Object*> cell: (function->defined_in->cells)) new_memory->write_data(cell.first, cell.second);
+
                     for (int i = 0; i < function->args_number; ++i)
                     {
                         string id = function->args_ids.at(i);
-                        this->memory[id] = this->pop_stack();
+                        new_memory->write_data(id, this->pop_stack());
 
                         args_ids.push_back(id);
-                    }
-                    
-                    this->runf_bytecode(function->bytecode, trace);
+                    }    
+
+                    defined_in_memory->sub_memories.push_back(new_memory);
+                    new_memory->parent = defined_in_memory;
+
+                    this->runf_bytecode(function->bytecode, trace, new_memory);
+
+                    delete new_memory;
 
                     this->running_bytecode = bytecode;
                     this->instruction_pointer = ip;
-
-                    for (pair<string, Object*> cell: this->memory) if (
-                        old_memory.find(cell.first) != old_memory.end() &&
-                        find(args_ids.begin(), args_ids.end(), cell.first) == args_ids.end()
-                    ) old_memory[cell.first] = cell.second;
-
-                    this->memory = old_memory;
                 } else this->errorf("No function to call in stack");
             }
             break;

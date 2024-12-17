@@ -97,6 +97,11 @@ void CompilerMain::node_to_bytecode(AstNode* node)
                     this->generated.push_back(Instruction(OP_PRINT));
                 }
                 break;
+            case WAIT:
+                {
+                    this->generated.push_back(Instruction(OP_WAIT));
+                }
+                break;
             case RETURN:
                 {
                     this->generated.push_back(Instruction(OP_RETURN));

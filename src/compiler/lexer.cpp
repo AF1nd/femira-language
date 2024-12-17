@@ -225,6 +225,8 @@ Token* Lexer::next_token()
             else if (buffer == "nil") return new Token(NIL, buffer, start_position);
 
             else if (buffer == "typedef") return new Token(TYPE, buffer, start_position);
+            
+            else if (buffer == "wait") return new Token(WAIT, buffer, start_position);
         }
 
         if (!buffer.empty()) return new Token(IDENTIFIER, buffer, start_position);

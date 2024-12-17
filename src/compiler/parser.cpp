@@ -62,11 +62,14 @@ map<TokenType, string> token_types_names = {
 
     { WHITESPACE, "whitespace" },
     { SEMICOLON, "semicolon" },
+
+    { WAIT, "wait" },
 };
 
 vector<TokenType> unary_token_types = {
     RETURN,
     PRINT,
+    WAIT
 };
 
 vector<TokenType> literal_token_types = {
