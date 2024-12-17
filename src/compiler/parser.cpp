@@ -62,7 +62,6 @@ map<TokenType, string> token_types_names = {
 
     { WHITESPACE, "whitespace" },
     { SEMICOLON, "semicolon" },
-    { NEWLINE, "newline" },
 };
 
 vector<TokenType> unary_token_types = {
@@ -102,7 +101,6 @@ vector<TokenType> binary_token_types = {
 Parser::Parser(vector<Token*> tokens)
 {
     this->position = 0;
-    this->line = 1;
     this->tokens = tokens;
 }
 
@@ -130,23 +128,25 @@ bool Parser::match(vector<TokenType> types)
 Token* Parser::eat(vector<TokenType> types)
 {
     string expected_tokens;
+    
     for (TokenType type: types) expected_tokens += token_types_names[type] + " ";
+
+    Token* token = this->tokens.at(this->position);
 
     if (this->is_token(types, this->position))
     {
-        Token* token = this->tokens.at(this->position);
         this->position++;
         return token;
     }
     
-    this->parser_errorf("Expected token: " + expected_tokens);
+    this->parser_errorf("Expected token: " + expected_tokens + ", given: " + token_types_names[token->type]);
 
     return nullptr;
 }
 
 void Parser::parser_errorf(string text)
 {
-    throw runtime_error("Syntax error: " + text + ", on line: " + to_string(this->line) + ", at position: " + to_string(this->position));
+    throw runtime_error("Syntax error: " + text + ", at position: " + to_string(this->position));
 }
 
 BlockNode* Parser::make_ast(bool trace)
@@ -155,12 +155,6 @@ BlockNode* Parser::make_ast(bool trace)
 
     while (this->position < this->tokens.size())
     {
-        if (this->match({ NEWLINE }))
-        {
-            this->line++;
-            continue;
-        }
-
         AstNode* expression = this->parse_expression();
         if (expression)
         {
@@ -473,12 +467,6 @@ BlockNode* Parser::parse_block()
 
     while (!this->is_token({ END }, this->position))
     {
-        if (this->match({ NEWLINE }))
-        {
-            this->line++;
-            continue;
-        }
-
         AstNode* node = this->parse_expression();
         if (node)
         {

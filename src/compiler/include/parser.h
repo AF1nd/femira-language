@@ -259,7 +259,6 @@ class Parser
         void parser_errorf(string text);
 
         int position;
-        int line;
 
         vector<Token*> tokens;
     public:

@@ -1,10 +1,7 @@
-a := 10
-
-while a > 1 {
-    if a ?= 5 {
-        print "5!!!"
-    }
-
-    a := a - 1
-    print a
+a := {
+    f := [1, { g := 6 } ,3]
 }
+
+index := "g"
+
+print a["f"][1][index]

@@ -157,6 +157,70 @@ void CompilerMain::node_to_bytecode(AstNode* node)
         {
             this->generated.push_back(instr);
         }
+    } else if (ArrayNode* array = dynamic_cast<ArrayNode*>(node))
+    {
+        this->temp_array_index++;
+
+        string temp_array_address = "tempnewarray" + to_string(this->temp_array_index);
+
+        this->generated.push_back(Instruction(Opcode(OP_NEWARRAY)));
+        this->generated.push_back(Instruction(Opcode(OP_WRITE_DATA), new String(temp_array_address)));
+
+        int index = 0;
+        for (AstNode* element: array->elements)
+        {
+            this->generated.push_back(Instruction(Opcode(OP_PUSHV), new Integer(index)));
+
+            this->node_to_bytecode(element);
+
+            this->generated.push_back(Instruction(Opcode(OP_READ_DATA), new String(temp_array_address)));
+            this->generated.push_back(Instruction(Opcode(OP_SETINDEX)));
+
+            index++;
+        }
+
+        this->generated.push_back(Instruction(Opcode(OP_READ_DATA), new String(temp_array_address)));
+
+        this->generated.push_back(Instruction(Opcode(OP_PUSHV), new Null()));
+        this->generated.push_back(Instruction(Opcode(OP_WRITE_DATA), new String(temp_array_address)));
+    } else if (ObjectNode* object = dynamic_cast<ObjectNode*>(node))
+    {
+        this->temp_object_index++;
+
+        string temp_object_address = "tempnewobject" + to_string(this->temp_object_index);
+
+        this->generated.push_back(Instruction(Opcode(OP_NEWOBJECT)));
+        this->generated.push_back(Instruction(Opcode(OP_WRITE_DATA), new String(temp_object_address)));
+
+        for (AstNode* field: object->fields)
+        {
+            if (BinaryOperationNode* assignment = dynamic_cast<BinaryOperationNode*>(field))
+            {
+                if (assignment->operator_token->type == ASSIGN)
+                {
+                    IdentifierNode* identifier = dynamic_cast<IdentifierNode*>(assignment->left_operand);
+                    if (!identifier) throw runtime_error("Compilation error! Assignment left operand can be only identifier");
+
+                    this->generated.push_back(Instruction(Opcode(OP_PUSHV), new String(identifier->token->value)));
+
+                    this->node_to_bytecode(assignment->right_operand);
+
+                    this->generated.push_back(Instruction(Opcode(OP_READ_DATA), new String(temp_object_address)));
+                    this->generated.push_back(Instruction(Opcode(OP_SETINDEX)));
+                }
+            }
+        }
+
+        this->generated.push_back(Instruction(Opcode(OP_READ_DATA), new String(temp_object_address)));
+
+        this->generated.push_back(Instruction(Opcode(OP_PUSHV), new Null()));
+        this->generated.push_back(Instruction(Opcode(OP_WRITE_DATA), new String(temp_object_address)));
+    } else if (IndexationNode* indexation = dynamic_cast<IndexationNode*>(node))
+    {
+        this->node_to_bytecode(indexation->index);
+        this->node_to_bytecode(indexation->where);
+
+        this->generated.push_back(Instruction(Opcode(OP_READINDEX)));
     } else if (BinaryOperationNode* binary = dynamic_cast<BinaryOperationNode*>(node))
     {
         TokenType operator_type = binary->operator_token->type;

@@ -19,10 +19,7 @@ int main(int argc, char** argv)
     string s;
     string code;
 
-    while (getline(f, s))
-    {
-        code += s + " \n";
-    }
+    while (getline(f, s)) code += s;
 
     f.close();
 

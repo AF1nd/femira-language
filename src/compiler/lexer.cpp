@@ -25,7 +25,6 @@ Lexer::Lexer(string code, bool trace)
     this->trace = trace;
     this->code = code;
     this->position = 0;
-    this->line = 0;
 }
 
 vector<Token*> Lexer::make_tokens() 
@@ -62,7 +61,6 @@ Token* Lexer::next_token()
     if (current_char == ' ') return new Token(WHITESPACE, " ", start_position);
     else if (current_char == '\n')
     {
-        this->line++;
         return new Token(NEWLINE, "\n", start_position);
     }
 
@@ -85,7 +83,7 @@ Token* Lexer::next_token()
             } else buffer.push_back(current_char);
         }
 
-        if (!is_quote_finded) throw runtime_error("String must have two quotes | Line: " + to_string(this->line));
+        if (!is_quote_finded) throw runtime_error("String must have two quotes (" + buffer + ")");
 
         return new Token(STRING, buffer, start_position);
     } else if (isdigit(current_char))
@@ -232,7 +230,7 @@ Token* Lexer::next_token()
         if (!buffer.empty()) return new Token(IDENTIFIER, buffer, start_position);
     }
 
-    throw runtime_error("Unexpected token '" + string { current_char } + "' at position " + to_string(start_position) + ", line: " + to_string(this->line));
+    throw runtime_error("Unexpected token '" + string { current_char } + "' at position " + to_string(start_position));
 
     return nullptr;
 }

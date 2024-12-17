@@ -38,6 +38,12 @@ enum Opcode
 
     OP_JUMP = 0x20,
     OP_JUMPIFNOT = 0x21,
+
+    OP_SETINDEX = 0x22,
+    OP_READINDEX = 0x23,
+
+    OP_NEWARRAY = 0x24,
+    OP_NEWOBJECT = 0x25,
 };
 
 struct Object
@@ -177,6 +183,30 @@ struct Null : Object
         if (Null* null = dynamic_cast<Null*>(with)) return true;
 
         return false;
+    }
+};
+
+struct Array : Object
+{
+    vector<Object*> elements;
+
+    string tostring() override 
+    {
+        string elements_string;
+
+        for (Object* obj: this->elements) elements_string += obj->tostring() + " ";
+
+        return elements_string + " (array)";
+    }
+};
+
+struct ObjectDataStructure : Object
+{
+    map<string, Object*> fields;
+
+    string tostring() override
+    {
+        return "object (data structure)";
     }
 };
 

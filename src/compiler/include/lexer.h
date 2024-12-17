@@ -85,7 +85,6 @@ class Lexer
         string code;
         bool trace;
         int position;
-        int line;
 
         Token* next_token();
     public:

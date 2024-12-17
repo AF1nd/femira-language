@@ -23,8 +23,8 @@ map<Opcode, string> opcode_to_string = {
 
     { OP_RETURN, "return" },
 
-    { OP_WRITE_DATA, "write" },
-    { OP_READ_DATA, "read" },
+    { OP_WRITE_DATA, "write_data" },
+    { OP_READ_DATA, "read_data" },
 
     { OP_CALL, "call" },
 
@@ -39,6 +39,12 @@ map<Opcode, string> opcode_to_string = {
 
     { OP_JUMP, "jump" },
     { OP_JUMPIFNOT, "jumpifnot" },
+
+    { OP_SETINDEX, "setindex" },
+    { OP_READINDEX, "readindex" },
+
+    { OP_NEWARRAY, "newarray" },
+    { OP_NEWOBJECT, "newobject" }
 };
 
 void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool trace) 
@@ -415,6 +421,66 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 cout << " ";
 
                 cout << endl;
+            }
+            break;
+        case OP_NEWARRAY:
+            {
+                this->push_stack(new Array());
+            }
+            break;
+        case OP_NEWOBJECT:
+            {
+                this->push_stack(new ObjectDataStructure());
+            }
+            break;
+        case OP_SETINDEX:
+            {
+                Object* object = this->pop_stack();
+                Object* value = this->pop_stack();
+                Object* index = this->pop_stack();
+                
+                if (Array* array = dynamic_cast<Array*>(object)) 
+                {
+                    if (Integer* index_integer = dynamic_cast<Integer*>(index))
+                    {
+                        array->elements.resize(index_integer->data + 1);
+                        array->elements[index_integer->data] = value;
+                        break;
+                    }
+                } else if (ObjectDataStructure* object_data_struct = dynamic_cast<ObjectDataStructure*>(object))
+                {
+                    if (String* index_string = dynamic_cast<String*>(index))
+                    {
+                        object_data_struct->fields[index_string->data] = value;
+                        break;
+                    }
+                }
+
+                this->errorf("Setindex error! Object must be a arrray or object data struct, index must be string or integer");
+            }
+            break;
+        case OP_READINDEX:
+            {
+                Object* object = this->pop_stack();
+                Object* index = this->pop_stack();
+                
+                if (Array* array = dynamic_cast<Array*>(object)) 
+                {
+                    if (Integer* index_integer = dynamic_cast<Integer*>(index))
+                    {
+                        this->push_stack(array->elements.at(index_integer->data));
+                        break;
+                    }
+                } else if (ObjectDataStructure* object_data_struct = dynamic_cast<ObjectDataStructure*>(object))
+                {
+                    if (String* index_string = dynamic_cast<String*>(index))
+                    {
+                        this->push_stack(object_data_struct->fields.at(index_string->data));
+                        break;
+                    }
+                }
+
+                this->errorf("Readindex error! Object must be a arrray or object data struct, index must be string or integer");
             }
             break;
         case OP_WAIT:
