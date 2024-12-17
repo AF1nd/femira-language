@@ -1,7 +1,9 @@
-a := {
-    f := [1, { g := 6 } ,3]
+i := 0
+
+array := ["один", "дваа", 3, 4, 5]
+
+while i < 5 {
+    print array[i]
+
+    i := i + 1
 }
-
-index := "g"
-
-print a["f"][1][index]

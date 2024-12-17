@@ -234,6 +234,18 @@ void CompilerMain::node_to_bytecode(AstNode* node)
                 
                 return;
             };
+        } else if (IndexationNode* indexation = dynamic_cast<IndexationNode*>(left_operand))
+        {
+            if (operator_type == ASSIGN)
+            {
+                this->node_to_bytecode(indexation->index);
+                this->node_to_bytecode(binary->right_operand);
+                this->node_to_bytecode(indexation->where);
+
+                this->generated.push_back(Instruction(Opcode(OP_SETINDEX))); 
+                
+                return;
+            };
         }
 
         this->node_to_bytecode(binary->left_operand);
