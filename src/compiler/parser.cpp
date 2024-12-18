@@ -339,7 +339,7 @@ AstNode* Parser::term()
 {
     AstNode* left = this->subterm();
 
-    while (this->match({ ASTERISK, SLASH }))
+    while (this->match({ PLUS, MINUS }))
     {
         Token* operator_token = this->tokens.at(this->position - 1);
 
@@ -355,7 +355,7 @@ AstNode* Parser::subterm()
 {
     AstNode* left = this->parse_expression(true);
 
-    while (this->match({ PLUS, MINUS }))
+    while (this->match({ ASTERISK, SLASH }))
     {
         Token* operator_token = this->tokens.at(this->position - 1);
 

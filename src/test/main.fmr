@@ -5,4 +5,4 @@ fn create_person(name: string, age: int) -> Person {
     }
 }
 
-print create_person("z", 5)["name"]
+print create_person("z", 5 + 5 * 5 + 5)["age"]

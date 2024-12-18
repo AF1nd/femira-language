@@ -75,426 +75,426 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
 
         switch (opcode)
         {
-        case OP_WRITE_DATA:
-            {
-                Object* address = data;
-                Object* data = this->pop_stack();
-
-                if (String* string = dynamic_cast<String*>(address)) 
+            case OP_WRITE_DATA:
                 {
-                    memory->write_data(string->data, data);
+                    Object* address = data;
+                    Object* data = this->pop_stack();
 
-                    if (Function* function = dynamic_cast<Function*>(data)) function->defined_in = memory;
-
-                    break;
-                } else errorf("Address for data write must be a string");
-            }
-            break;
-        case OP_READ_DATA:
-            {
-                Object* address = data; 
-                
-                if (String* string = dynamic_cast<String*>(address)) 
-                {
-                    push_stack(memory->read_data(string->data));
-                } else this->errorf("Address for data read must be a string");
-            }
-            break;
-        case OP_JUMP:
-            {
-                if (Integer* integer = dynamic_cast<Integer*>(data)) 
-                {
-                    this->instruction_pointer += integer->data;
-                    break;
-                }
-
-                this->errorf("Jump error, operand must be a integer");
-            }
-            break;
-        case OP_JUMPIFNOT:
-            {
-                if (Integer* integer = dynamic_cast<Integer*>(data)) 
-                {
-                    if (Boolean* boolean = dynamic_cast<Boolean*>(this->pop_stack()))
+                    if (String* string = dynamic_cast<String*>(address)) 
                     {
-                        if (!boolean->data) {
-                            this->instruction_pointer += integer->data;
+                        memory->write_data(string->data, data);
+
+                        if (Function* function = dynamic_cast<Function*>(data)) function->defined_in = memory;
+
+                        break;
+                    } else errorf("Address for data write must be a string");
+                }
+                break;
+            case OP_READ_DATA:
+                {
+                    Object* address = data; 
+                    
+                    if (String* string = dynamic_cast<String*>(address)) 
+                    {
+                        push_stack(memory->read_data(string->data));
+                    } else this->errorf("Address for data read must be a string");
+                }
+                break;
+            case OP_JUMP:
+                {
+                    if (Integer* integer = dynamic_cast<Integer*>(data)) 
+                    {
+                        this->instruction_pointer += integer->data;
+                        break;
+                    }
+
+                    this->errorf("Jump error, operand must be a integer");
+                }
+                break;
+            case OP_JUMPIFNOT:
+                {
+                    if (Integer* integer = dynamic_cast<Integer*>(data)) 
+                    {
+                        if (Boolean* boolean = dynamic_cast<Boolean*>(this->pop_stack()))
+                        {
+                            if (!boolean->data) {
+                                this->instruction_pointer += integer->data;
+                            }
+
+                            break;
+                        }
+                    }
+
+                    this->errorf("Jumpifnot error, operand must be a integer and condition must be a boolean");
+                }
+                break;
+            case OP_CALL:
+                {
+                    Object* data = this->pop_stack();
+
+                    if (Function* function = dynamic_cast<Function*>(data)) 
+                    {
+                        int ip = this->instruction_pointer;
+
+                        Memory* defined_in_memory = function->defined_in;
+                        Memory* new_memory = new Memory();
+
+                        for (pair<string, Object*> cell: (function->defined_in->cells)) new_memory->write_data(cell.first, cell.second);
+
+                        reverse(function->args_ids.begin(), function->args_ids.end());
+
+                        for (string id: function->args_ids)
+                        {
+                            new_memory->write_data(id, this->pop_stack());
                         }
 
-                        break;
-                    }
+                        defined_in_memory->sub_memories.push_back(new_memory);
+                        new_memory->parent = defined_in_memory;
+
+                        this->runf_bytecode(function->bytecode, trace, new_memory);
+
+                        this->running_bytecode = bytecode;
+                        this->instruction_pointer = ip;
+
+                        delete new_memory;
+                    } else this->errorf("No function to call in stack");
                 }
-
-                this->errorf("Jumpifnot error, operand must be a integer and condition must be a boolean");
-            }
-            break;
-        case OP_CALL:
-            {
-                Object* data = this->pop_stack();
-
-                if (Function* function = dynamic_cast<Function*>(data)) 
+                break;
+            case OP_ADD:
                 {
-                    int ip = this->instruction_pointer;
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
 
-                    Memory* defined_in_memory = function->defined_in;
-                    Memory* new_memory = new Memory();
-
-                    for (pair<string, Object*> cell: (function->defined_in->cells)) new_memory->write_data(cell.first, cell.second);
-
-                    reverse(function->args_ids.begin(), function->args_ids.end());
-
-                    for (string id: function->args_ids)
+                    if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
                     {
-                        new_memory->write_data(id, this->pop_stack());
+                        if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                        {
+                            this->push_stack(new Integer(integer->data + integer2->data));
+                            break;
+                        }
+                    } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
+                    {
+                        if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        {
+                            this->push_stack(new Double(double_value->data + double_value2->data));
+                            break;
+                        }
                     }
 
-                    defined_in_memory->sub_memories.push_back(new_memory);
-                    new_memory->parent = defined_in_memory;
-
-                    this->runf_bytecode(function->bytecode, trace, new_memory);
-
-                    this->running_bytecode = bytecode;
-                    this->instruction_pointer = ip;
-
-                    delete new_memory;
-                } else this->errorf("No function to call in stack");
-            }
-            break;
-        case OP_ADD:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
-                {
-                    if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
-                    {
-                        this->push_stack(new Integer(integer->data + integer2->data));
-                        break;
-                    }
-                } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
-                {
-                    if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
-                    {
-                        this->push_stack(new Double(double_value->data + double_value2->data));
-                        break;
-                    }
+                    this->errorf("Add operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
                 }
-
-                this->errorf("Add operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
-            }
-            break;
-        case OP_SUB:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
+                break;
+            case OP_SUB:
                 {
-                    if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
+
+                    if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
                     {
-                        this->push_stack(new Integer(integer2->data - integer->data));
-                        break;
-                    }
-                } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
-                {
-                    if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                        {
+                            this->push_stack(new Integer(integer2->data - integer->data));
+                            break;
+                        }
+                    } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                     {
-                        this->push_stack(new Double(double_value2->data - double_value->data));
-                        break;
+                        if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        {
+                            this->push_stack(new Double(double_value2->data - double_value->data));
+                            break;
+                        }
                     }
+
+                    this->errorf("Substract operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
                 }
-
-                this->errorf("Substract operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
-            }
-            break;
-        case OP_MUL:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
+                break;
+            case OP_MUL:
                 {
-                    if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
+
+                    if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
                     {
-                        this->push_stack(new Integer(integer->data * integer2->data));
-                        break;
-                    }
-                } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
-                {
-                    if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                        {
+                            this->push_stack(new Integer(integer->data * integer2->data));
+                            break;
+                        }
+                    } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                     {
-                        this->push_stack(new Double(double_value->data * double_value2->data));
-                        break;
+                        if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        {
+                            this->push_stack(new Double(double_value->data * double_value2->data));
+                            break;
+                        }
                     }
+
+                    this->errorf("Multiply operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
                 }
-
-                this->errorf("Multiply operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
-            }
-            break;
-        case OP_DIV:
-             {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
+                break;
+            case OP_DIV:
                 {
-                    if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
+
+                    if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
                     {
-                        this->push_stack(new Integer(integer2->data / integer->data));
-                        break;
-                    }
-                } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
-                {
-                    if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                        {
+                            this->push_stack(new Integer(integer2->data / integer->data));
+                            break;
+                        }
+                    } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                     {
-                        this->push_stack(new Double(double_value2->data / double_value->data));
-                        break;
+                        if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        {
+                            this->push_stack(new Double(double_value2->data / double_value->data));
+                            break;
+                        }
                     }
+
+                    this->errorf("Divide operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
                 }
-
-                this->errorf("Divide operation error, operands " + obj1->tostring() + " and " + obj2->tostring() + " are incompatible");
-            }
-            break;
-        case OP_PUSHV:
-            {
-                this->push_stack(data);
-            }
-            break;
-        case OP_RETURN:
-            return;
-        case OP_AND:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Boolean* object1 = dynamic_cast<Boolean*>(obj1))
+                break;
+            case OP_PUSHV:
                 {
-                    if (Boolean* object2 = dynamic_cast<Boolean*>(obj2))
-                    {
-                        this->push_stack(new Boolean(object1->data && object2->data));
-                        break;
-                    }
+                    this->push_stack(data);
                 }
-
-                this->errorf("Operator '&' can compare only booleans");
-            }
-            break;
-        case OP_OR:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Boolean* object1 = dynamic_cast<Boolean*>(obj1))
+                break;
+            case OP_RETURN:
+                return;
+            case OP_AND:
                 {
-                    if (Boolean* object2 = dynamic_cast<Boolean*>(obj2))
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
+
+                    if (Boolean* object1 = dynamic_cast<Boolean*>(obj1))
                     {
-                        this->push_stack(new Boolean(object1->data || object2->data));
-                        break;
+                        if (Boolean* object2 = dynamic_cast<Boolean*>(obj2))
+                        {
+                            this->push_stack(new Boolean(object1->data && object2->data));
+                            break;
+                        }
                     }
+
+                    this->errorf("Operator '&' can compare only booleans");
                 }
-
-                this->errorf("Operator '|' can compare only booleans");
-            }
-            break;
-        case OP_EQ:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                this->push_stack(new Boolean(obj1->is_eq(obj2)));
-            }
-            break;
-        case OP_NOTEQ:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                this->push_stack(new Boolean(!obj1->is_eq(obj2)));
-            }
-            break;
-        case OP_BIGGER:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
+                break;
+            case OP_OR:
                 {
-                    if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
+
+                    if (Boolean* object1 = dynamic_cast<Boolean*>(obj1))
                     {
-                        this->push_stack(new Boolean(integer2->data > integer->data));
-                        break;
+                        if (Boolean* object2 = dynamic_cast<Boolean*>(obj2))
+                        {
+                            this->push_stack(new Boolean(object1->data || object2->data));
+                            break;
+                        }
                     }
-                } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
-                {
-                    if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
-                    {
-                        this->push_stack(new Boolean(double_value2->data > double_value->data));
-                        break;
-                    }
+
+                    this->errorf("Operator '|' can compare only booleans");
                 }
-
-                this->errorf("> operator can work only with integers / doubles");
-            }
-            break;
-        case OP_SMALLER:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
+                break;
+            case OP_EQ:
                 {
-                    if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
-                    {
-                        this->push_stack(new Boolean(integer2->data < integer->data));
-                        break;
-                    }
-                } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
-                {
-                    if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
-                    {
-                        this->push_stack(new Boolean(double_value2->data < double_value->data));
-                        break;
-                    }
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
+
+                    this->push_stack(new Boolean(obj1->is_eq(obj2)));
                 }
-
-                this->errorf("< operator can work only with integers / doubles");
-            }
-            break;
-        case OP_BIGGEROREQ:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
+                break;
+            case OP_NOTEQ:
                 {
-                    if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
-                    {
-                        this->push_stack(new Boolean(integer2->data >= integer->data));
-                        break;
-                    }
-                } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
-                {
-                    if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
-                    {
-                        this->push_stack(new Boolean(double_value2->data >= double_value->data));
-                        break;
-                    }
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
+
+                    this->push_stack(new Boolean(!obj1->is_eq(obj2)));
                 }
-
-                this->errorf(">= operator can work only with integers / doubles");
-            }
-            break;
-        case OP_SMALLEROREQ:
-            {
-                Object* obj1 = this->pop_stack();
-                Object* obj2 = this->pop_stack();
-
-                if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
+                break;
+            case OP_BIGGER:
                 {
-                    if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
+
+                    if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
                     {
-                        this->push_stack(new Boolean(integer2->data <= integer->data));
-                        break;
-                    }
-                } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
-                {
-                    if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                        {
+                            this->push_stack(new Boolean(integer2->data > integer->data));
+                            break;
+                        }
+                    } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                     {
-                        this->push_stack(new Boolean(double_value2->data <= double_value->data));
-                        break;
+                        if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        {
+                            this->push_stack(new Boolean(double_value2->data > double_value->data));
+                            break;
+                        }
                     }
+
+                    this->errorf("> operator can work only with integers / doubles");
                 }
-
-                this->errorf("<= operator can work only with integers / doubles");
-            }
-            break;
-        case OP_PRINT:
-            {
-                Object* obj = this->pop_stack();
-                string to_print = obj->tostring();
-
-                cout << " ";
-
-                cout << endl;
-
-                cout << " | " + to_print + " | " << endl;
-
-                cout << " ";
-
-                cout << endl;
-            }
-            break;
-        case OP_NEWARRAY:
-            {
-                this->push_stack(new Array());
-            }
-            break;
-        case OP_NEWOBJECT:
-            {
-                this->push_stack(new ObjectDataStructure());
-            }
-            break;
-        case OP_SETINDEX:
-            {
-                Object* object = this->pop_stack();
-                Object* value = this->pop_stack();
-                Object* index = this->pop_stack();
-                
-                if (Array* array = dynamic_cast<Array*>(object)) 
+                break;
+            case OP_SMALLER:
                 {
-                    if (Integer* index_integer = dynamic_cast<Integer*>(index))
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
+
+                    if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
                     {
-                        array->elements.resize(index_integer->data + 1);
-                        array->elements[index_integer->data] = value;
-                        break;
-                    }
-                } else if (ObjectDataStructure* object_data_struct = dynamic_cast<ObjectDataStructure*>(object))
-                {
-                    if (String* index_string = dynamic_cast<String*>(index))
+                        if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                        {
+                            this->push_stack(new Boolean(integer2->data < integer->data));
+                            break;
+                        }
+                    } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                     {
-                        object_data_struct->fields[index_string->data] = value;
-                        break;
+                        if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        {
+                            this->push_stack(new Boolean(double_value2->data < double_value->data));
+                            break;
+                        }
                     }
+
+                    this->errorf("< operator can work only with integers / doubles");
                 }
+                break;
+            case OP_BIGGEROREQ:
+                {
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
 
-                this->errorf("Setindex error! Object must be a arrray or object data struct, index must be string or integer");
-            }
-            break;
-        case OP_READINDEX:
-            {
-                Object* object = this->pop_stack();
-                Object* index = this->pop_stack();
-                
-                if (Array* array = dynamic_cast<Array*>(object)) 
-                {
-                    if (Integer* index_integer = dynamic_cast<Integer*>(index))
+                    if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
                     {
-                        this->push_stack(array->elements.at(index_integer->data));
-                        break;
-                    }
-                } else if (ObjectDataStructure* object_data_struct = dynamic_cast<ObjectDataStructure*>(object))
-                {
-                    if (String* index_string = dynamic_cast<String*>(index))
+                        if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                        {
+                            this->push_stack(new Boolean(integer2->data >= integer->data));
+                            break;
+                        }
+                    } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
                     {
-                        this->push_stack(object_data_struct->fields.at(index_string->data));
-                        break;
+                        if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        {
+                            this->push_stack(new Boolean(double_value2->data >= double_value->data));
+                            break;
+                        }
                     }
+
+                    this->errorf(">= operator can work only with integers / doubles");
                 }
+                break;
+            case OP_SMALLEROREQ:
+                {
+                    Object* obj1 = this->pop_stack();
+                    Object* obj2 = this->pop_stack();
 
-                this->errorf("Readindex error! Object must be a arrray or object data struct, index must be string or integer");
-            }
-            break;
-        case OP_WAIT:
-            {
-                Object* object = this->pop_stack();
+                    if (Integer* integer = dynamic_cast<Integer*>(obj1)) 
+                    {
+                        if (Integer* integer2 = dynamic_cast<Integer*>(obj2)) 
+                        {
+                            this->push_stack(new Boolean(integer2->data <= integer->data));
+                            break;
+                        }
+                    } else if (Double* double_value = dynamic_cast<Double*>(obj1)) 
+                    {
+                        if (Double* double_value2 = dynamic_cast<Double*>(obj2)) 
+                        {
+                            this->push_stack(new Boolean(double_value2->data <= double_value->data));
+                            break;
+                        }
+                    }
 
-                if (Integer* integer = dynamic_cast<Integer*>(object)) this_thread::sleep_for(chrono::duration<int>(integer->data));
-                else if (Double* double_value = dynamic_cast<Double*>(object)) this_thread::sleep_for(chrono::duration<double>(double_value->data));
-            }
-            break;
-        default:
-            break;
+                    this->errorf("<= operator can work only with integers / doubles");
+                }
+                break;
+            case OP_PRINT:
+                {
+                    Object* obj = this->pop_stack();
+                    string to_print = obj->tostring();
+
+                    cout << " ";
+
+                    cout << endl;
+
+                    cout << " | " + to_print + " | " << endl;
+
+                    cout << " ";
+
+                    cout << endl;
+                }
+                break;
+            case OP_NEWARRAY:
+                {
+                    this->push_stack(new Array());
+                }
+                break;
+            case OP_NEWOBJECT:
+                {
+                    this->push_stack(new ObjectDataStructure());
+                }
+                break;
+            case OP_SETINDEX:
+                {
+                    Object* object = this->pop_stack();
+                    Object* value = this->pop_stack();
+                    Object* index = this->pop_stack();
+                    
+                    if (Array* array = dynamic_cast<Array*>(object)) 
+                    {
+                        if (Integer* index_integer = dynamic_cast<Integer*>(index))
+                        {
+                            array->elements.resize(index_integer->data + 1);
+                            array->elements[index_integer->data] = value;
+                            break;
+                        }
+                    } else if (ObjectDataStructure* object_data_struct = dynamic_cast<ObjectDataStructure*>(object))
+                    {
+                        if (String* index_string = dynamic_cast<String*>(index))
+                        {
+                            object_data_struct->fields[index_string->data] = value;
+                            break;
+                        }
+                    }
+
+                    this->errorf("Setindex error! Object must be a arrray or object data struct, index must be string or integer");
+                }
+                break;
+            case OP_READINDEX:
+                {
+                    Object* object = this->pop_stack();
+                    Object* index = this->pop_stack();
+                    
+                    if (Array* array = dynamic_cast<Array*>(object)) 
+                    {
+                        if (Integer* index_integer = dynamic_cast<Integer*>(index))
+                        {
+                            this->push_stack(array->elements.at(index_integer->data));
+                            break;
+                        }
+                    } else if (ObjectDataStructure* object_data_struct = dynamic_cast<ObjectDataStructure*>(object))
+                    {
+                        if (String* index_string = dynamic_cast<String*>(index))
+                        {
+                            this->push_stack(object_data_struct->fields.at(index_string->data));
+                            break;
+                        }
+                    }
+
+                    this->errorf("Readindex error! Object must be a arrray or object data struct, index must be string or integer");
+                }
+                break;
+            case OP_WAIT:
+                {
+                    Object* object = this->pop_stack();
+
+                    if (Integer* integer = dynamic_cast<Integer*>(object)) this_thread::sleep_for(chrono::duration<int>(integer->data));
+                    else if (Double* double_value = dynamic_cast<Double*>(object)) this_thread::sleep_for(chrono::duration<double>(double_value->data));
+                }
+                break;
+            default:
+                break;
         }
 
         this->instruction_pointer++;
