@@ -79,8 +79,7 @@ void CompilerMain::node_to_bytecode(AstNode* node)
 
         Function function_object(compiler.get_generated_bytecode(), function->needed_arguments.size());
 
-        int i = 0;
-        for (IdentifierNode* argument: function->needed_arguments) function_object.args_ids[i] = argument->token->value;
+        for (IdentifierNode* argument: function->needed_arguments) function_object.args_ids.push_back(argument->token->value);
 
         this->generated.push_back(Instruction(Opcode(OP_PUSHV), new Function(function_object)));
         this->generated.push_back(Instruction(Opcode(OP_WRITE_DATA), new String(function->id->token->value)));

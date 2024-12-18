@@ -136,30 +136,27 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                 {
                     int ip = this->instruction_pointer;
 
-                    vector<string> args_ids;
-
                     Memory* defined_in_memory = function->defined_in;
                     Memory* new_memory = new Memory();
 
                     for (pair<string, Object*> cell: (function->defined_in->cells)) new_memory->write_data(cell.first, cell.second);
 
-                    for (int i = 0; i < function->args_number; ++i)
-                    {
-                        string id = function->args_ids.at(i);
-                        new_memory->write_data(id, this->pop_stack());
+                    reverse(function->args_ids.begin(), function->args_ids.end());
 
-                        args_ids.push_back(id);
-                    }    
+                    for (string id: function->args_ids)
+                    {
+                        new_memory->write_data(id, this->pop_stack());
+                    }
 
                     defined_in_memory->sub_memories.push_back(new_memory);
                     new_memory->parent = defined_in_memory;
 
                     this->runf_bytecode(function->bytecode, trace, new_memory);
 
-                    delete new_memory;
-
                     this->running_bytecode = bytecode;
                     this->instruction_pointer = ip;
+
+                    delete new_memory;
                 } else this->errorf("No function to call in stack");
             }
             break;

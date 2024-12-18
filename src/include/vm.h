@@ -187,12 +187,11 @@ struct Double : Object
 struct Function : Object
 {
     Bytecode bytecode;
-    int args_number;
 
-    map<int, string> args_ids;
+    vector<string> args_ids;
     Memory* defined_in;
 
-    Function(Bytecode bytecode, int args_number) { this->bytecode = bytecode; this->args_number = args_number; };
+    Function(Bytecode bytecode, int args_number) { this->bytecode = bytecode; };
 
     string tostring() override 
     {

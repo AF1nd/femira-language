@@ -272,12 +272,12 @@ AstNode* Parser::subparse(AstNode* expression, int started_position, bool ignore
         is_subparsed = true;
         subparsed = this->parse_call(expression);
     }
-    if (this->is_token({ LSQPAREN }, this->position)) 
+    else if (this->is_token({ LSQPAREN }, this->position)) 
     {
         is_subparsed = true;
         subparsed = this->parse_indexation(expression);
     }
-    if (this->is_token(binary_token_types, this->position) && !ignore_binaries)
+    else if (this->is_token(binary_token_types, this->position) && !ignore_binaries)
     {
         this->position = started_position;
         is_subparsed = true;

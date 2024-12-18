@@ -1,7 +1,8 @@
-i := 0
-while i < 10 {
-    print i
-    i := i + 1
-
-    wait 1
+fn create_person(name: string, age: int) -> Person {
+    return {
+        name := name,
+        age := age
+    }
 }
+
+print create_person("z", 5)["name"]

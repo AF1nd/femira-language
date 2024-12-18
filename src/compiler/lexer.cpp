@@ -199,7 +199,7 @@ Token* Lexer::next_token()
 
             current_char = this->code.at(current_position);
 
-            if (!isalpha(current_char) && !isdigit(current_char))
+            if (!isalpha(current_char) && !isdigit(current_char) && current_char != '_')
             {
                 this->position--;
                 break;

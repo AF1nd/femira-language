@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
     Lexer lexer(code, false);
     Parser parser(lexer.make_tokens());
-    BlockNode* ast = parser.make_ast(false);
+    BlockNode* ast = parser.make_ast(true);
 
     CompilerMain compiler;
 
