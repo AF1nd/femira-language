@@ -12,6 +12,16 @@ vector<Instruction> CompilerMain::get_generated_bytecode()
     return this->generated;
 }
 
+bool CompilerMain::is_types_compatible(AstNode* node_1, AstNode* node_2)
+{
+
+}
+
+Type* CompilerMain::get_node_type(AstNode* node)
+{
+
+}
+
 void CompilerMain::node_to_bytecode(AstNode* node)
 {
     if (IdentifierNode* identifier = dynamic_cast<IdentifierNode*>(node))
