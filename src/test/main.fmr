@@ -1,8 +1,13 @@
-fn create_person(name: string, age: int) -> Person {
-    return {
-        name := name,
-        age := age
-    }
+fn output_data(data: string) -> void {
+    print data
 }
 
-print create_person("z", 5 + 5 * 5 + 5)["age"]
+output_data("just string")
+
+obj := {
+    z := 5
+}
+
+f := obj["z"]
+
+print f

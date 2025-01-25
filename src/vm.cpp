@@ -482,7 +482,7 @@ void FemiraVirtualMachine::runf_bytecode(const Bytecode bytecode, const bool tra
                         }
                     }
 
-                    this->errorf("Readindex error! Object must be a arrray or object data struct, index must be string or integer");
+                    this->errorf("Readindex error! Object must be a array or object data struct, index must be string or integer");
                 }
                 break;
             case OP_WAIT:
